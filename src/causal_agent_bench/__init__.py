@@ -7,13 +7,14 @@ harness.
 """
 
 from .evaluation import BucketMetrics, EvaluationReport, evaluate_router
+from .leaderboard import LeaderboardEntry, LeaderboardResult, run_leaderboard
 from .loader import DataSource, InMemoryDataSource
 from .loaders import RouterBenchJsonlLoader
 from .router import HeuristicRouter, RandomRouter, Router, RouterChoice
 from .routers import ThompsonRouter
 from .schema import AnnotatedDecision, CausalAnnotation, Difficulty, RouterDecision, TaskType
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 __all__ = [
     "AnnotatedDecision",
@@ -24,6 +25,8 @@ __all__ = [
     "EvaluationReport",
     "HeuristicRouter",
     "InMemoryDataSource",
+    "LeaderboardEntry",
+    "LeaderboardResult",
     "RandomRouter",
     "Router",
     "RouterBenchJsonlLoader",
@@ -32,5 +35,6 @@ __all__ = [
     "TaskType",
     "ThompsonRouter",
     "evaluate_router",
+    "run_leaderboard",
     "__version__",
 ]

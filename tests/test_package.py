@@ -8,7 +8,7 @@ def test_package_imports():
 
 
 def test_version_defined():
-    assert causal_agent_bench.__version__ == "0.0.3"
+    assert causal_agent_bench.__version__ == "0.0.4"
 
 
 def test_public_api_surface():
@@ -21,6 +21,8 @@ def test_public_api_surface():
         "EvaluationReport",
         "HeuristicRouter",
         "InMemoryDataSource",
+        "LeaderboardEntry",
+        "LeaderboardResult",
         "RandomRouter",
         "Router",
         "RouterBenchJsonlLoader",
@@ -29,6 +31,7 @@ def test_public_api_surface():
         "TaskType",
         "ThompsonRouter",
         "evaluate_router",
+        "run_leaderboard",
         "__version__",
     }
     assert expected <= set(causal_agent_bench.__all__)
