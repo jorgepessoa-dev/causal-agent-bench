@@ -2,7 +2,19 @@
 
 Public benchmark for **causal LLM routing** — extends [RouterBench](https://github.com/withmartian/routerbench) (405k outcomes) with causal annotations (task-type, difficulty, confounders) to support offline causal evaluation and routing comparisons.
 
-> **Status**: Scaffold (F2.1 — pre-dataset). Not installable yet. See `docs/ROADMAP.md`.
+> **Status**: Early-alpha. Schema, loaders, baselines, and evaluation harness landed (F2.1–F2.4 scaffolds). Real RouterBench ingestion pending F2.2 dedicated session. See `docs/ROADMAP.md`.
+
+## Quick start
+
+```bash
+git clone https://github.com/jorgepessoa-dev/causal-agent-bench && cd causal-agent-bench
+pip install -e .
+python -m causal_agent_bench.cli \
+    --source tests/fixtures/synthetic_router_decisions.jsonl \
+    --router heuristic
+```
+
+Available baselines: `random`, `heuristic`. Smarter routers (RouteLLM reimpl, causal-agent-router) are scoped for the next commits.
 
 ## Why
 
@@ -28,7 +40,11 @@ Apache-2.0 (preliminary; confirm in F2.1 finalization).
 ## Status
 
 - [x] Scaffold directory tree + governance files
-- [ ] Dataset seed (F2.2)
-- [ ] Baseline implementations (F2.3)
-- [ ] Leaderboard CI (F2.4)
+- [x] Schema + DataSource Protocol (F2.1, F2.2 prep)
+- [x] RouterBench JSONL loader (F2.2 prep; real ingestion pending license check)
+- [x] Baselines: `RandomRouter`, `HeuristicRouter` (F2.3 — 2 of 4; RouteLLM + causal pending)
+- [x] Evaluation harness + CLI (F2.3 + F2.4 scaffold)
+- [x] Leaderboard workflow (F2.4 scaffold — runs on every PR)
+- [ ] Real RouterBench seed (F2.2)
+- [ ] Full baselines set: RouteLLM-reimpl + causal-agent-router (F2.3 completion)
 - [ ] Contribution docs finalised (F2.5)
