@@ -8,4 +8,28 @@ def test_package_imports():
 
 
 def test_version_defined():
-    assert causal_agent_bench.__version__ == "0.0.1"
+    assert causal_agent_bench.__version__ == "0.0.2"
+
+
+def test_public_api_surface():
+    expected = {
+        "AnnotatedDecision",
+        "BucketMetrics",
+        "CausalAnnotation",
+        "DataSource",
+        "Difficulty",
+        "EvaluationReport",
+        "HeuristicRouter",
+        "InMemoryDataSource",
+        "RandomRouter",
+        "Router",
+        "RouterBenchJsonlLoader",
+        "RouterChoice",
+        "RouterDecision",
+        "TaskType",
+        "evaluate_router",
+        "__version__",
+    }
+    assert expected <= set(causal_agent_bench.__all__)
+    for name in expected:
+        assert hasattr(causal_agent_bench, name), f"missing: {name}"
