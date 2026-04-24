@@ -26,7 +26,13 @@ class TestLeaderboardCLI:
         out = _run(["--source", str(FIXTURE)])
         payload = json.loads(out)
         assert "ranking" in payload
-        assert set(payload["ranking"]) == {"random", "heuristic", "popularity", "thompson"}
+        assert set(payload["ranking"]) == {
+            "random",
+            "heuristic",
+            "popularity",
+            "thompson",
+            "contextual_thompson",
+        }
         assert payload["seed"] == 0
         assert payload["source"] == str(FIXTURE)
 
@@ -40,7 +46,7 @@ class TestLeaderboardCLI:
         _run(["--source", str(FIXTURE), "--output", str(dest)])
         payload = json.loads(dest.read_text())
         assert "results" in payload
-        assert len(payload["results"]) == 4
+        assert len(payload["results"]) == 5
 
     def test_warmup_affects_thompson(self, tmp_path: Path):
         # Build a warmup file where model "gpt-4" always wins.

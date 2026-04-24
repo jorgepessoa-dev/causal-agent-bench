@@ -11,15 +11,16 @@ from .leaderboard import LeaderboardEntry, LeaderboardResult, run_leaderboard
 from .loader import DataSource, InMemoryDataSource
 from .loaders import RouterBenchJsonlLoader
 from .router import HeuristicRouter, RandomRouter, Router, RouterChoice
-from .routers import PopularityRouter, ThompsonRouter
+from .routers import ContextualThompsonRouter, PopularityRouter, ThompsonRouter
 from .schema import AnnotatedDecision, CausalAnnotation, Difficulty, RouterDecision, TaskType
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 __all__ = [
     "AnnotatedDecision",
     "BucketMetrics",
     "CausalAnnotation",
+    "ContextualThompsonRouter",
     "DataSource",
     "Difficulty",
     "EvaluationReport",

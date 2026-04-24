@@ -8,7 +8,7 @@ def test_package_imports():
 
 
 def test_version_defined():
-    assert causal_agent_bench.__version__ == "0.0.5"
+    assert causal_agent_bench.__version__ == "0.0.6"
 
 
 def test_public_api_surface():
@@ -16,6 +16,7 @@ def test_public_api_surface():
         "AnnotatedDecision",
         "BucketMetrics",
         "CausalAnnotation",
+        "ContextualThompsonRouter",
         "DataSource",
         "Difficulty",
         "EvaluationReport",
