@@ -23,16 +23,22 @@ from typing import Any, Dict, Optional, Sequence, TextIO
 from .evaluation import EvaluationReport, evaluate_router
 from .loaders import RouterBenchJsonlLoader
 from .router import HeuristicRouter, RandomRouter, Router
+from .routers import ThompsonRouter
 
 
-_ROUTERS = ("random", "heuristic")
+_ROUTERS = ("random", "heuristic", "thompson")
 
 
-def _build_router(name: str, *, seed: int) -> Router:
+def _build_router(name: str, *, seed: int, warmup_source: Optional[Path] = None) -> Router:
     if name == "random":
         return RandomRouter(seed=seed)
     if name == "heuristic":
         return HeuristicRouter()
+    if name == "thompson":
+        router = ThompsonRouter(seed=seed)
+        if warmup_source is not None:
+            router.fit(RouterBenchJsonlLoader(warmup_source))
+        return router
     raise ValueError(f"unknown router: {name}; choose from {_ROUTERS}")
 
 
@@ -53,6 +59,15 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=0,
         help="Seed for stochastic routers (default: 0).",
+    )
+    p.add_argument(
+        "--warmup",
+        type=Path,
+        default=None,
+        help=(
+            "Optional JSONL used to pre-fit learning routers (currently: thompson). "
+            "Ignored by stateless routers."
+        ),
     )
     p.add_argument(
         "--output",
@@ -90,7 +105,7 @@ def main(
     args = _build_parser().parse_args(argv)
     out = stdout if stdout is not None else sys.stdout
 
-    router = _build_router(args.router, seed=args.seed)
+    router = _build_router(args.router, seed=args.seed, warmup_source=args.warmup)
     source = RouterBenchJsonlLoader(args.source)
     report = evaluate_router(router, source)
 

@@ -8,7 +8,7 @@ def test_package_imports():
 
 
 def test_version_defined():
-    assert causal_agent_bench.__version__ == "0.0.2"
+    assert causal_agent_bench.__version__ == "0.0.3"
 
 
 def test_public_api_surface():
@@ -27,6 +27,7 @@ def test_public_api_surface():
         "RouterChoice",
         "RouterDecision",
         "TaskType",
+        "ThompsonRouter",
         "evaluate_router",
         "__version__",
     }

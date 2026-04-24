@@ -10,9 +10,10 @@ from .evaluation import BucketMetrics, EvaluationReport, evaluate_router
 from .loader import DataSource, InMemoryDataSource
 from .loaders import RouterBenchJsonlLoader
 from .router import HeuristicRouter, RandomRouter, Router, RouterChoice
+from .routers import ThompsonRouter
 from .schema import AnnotatedDecision, CausalAnnotation, Difficulty, RouterDecision, TaskType
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 __all__ = [
     "AnnotatedDecision",
@@ -29,6 +30,7 @@ __all__ = [
     "RouterChoice",
     "RouterDecision",
     "TaskType",
+    "ThompsonRouter",
     "evaluate_router",
     "__version__",
 ]
