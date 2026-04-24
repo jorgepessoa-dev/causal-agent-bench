@@ -6,6 +6,9 @@ ties to the exact line of code that computes it so reviewers can audit.
 Status: **match-IPS (interval-1)**. Full doubly-robust (DR) metrics land
 once the causal baseline (Routecast) wires its SCM into scoring.
 
+For the current baseline numbers on the synthetic fixture, see
+[`RESULTS.md`](RESULTS.md).
+
 ## Notation
 
 - `D` = dataset (sequence of `AnnotatedDecision` rows).

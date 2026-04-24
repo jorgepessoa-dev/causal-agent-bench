@@ -34,8 +34,8 @@ into the leaderboard.
    the repo or load from a pinned artifact.
 
 4. **Tests.** At least one test that instantiates your router and calls
-   `evaluate_router` against `tests/fixtures/synthetic_router_decisions.jsonl`.
-   The test must pass locally without network access.
+   `evaluate_router` against a fixture under `tests/fixtures/`. The test
+   must pass locally without network access.
 
 5. **License.** Your contribution is offered under Apache-2.0 (the repo
    license). If your router depends on a package under an incompatible
@@ -47,10 +47,14 @@ The CI job runs:
 
 ```bash
 python -m causal_agent_bench.leaderboard_cli \
-    --source tests/fixtures/synthetic_router_decisions.jsonl \
+    --source tests/fixtures/synthetic_router_decisions_large.jsonl \
+    --warmup-split 250 \
     --seed 0 \
     --output leaderboard.json
 ```
+
+The first 250 rows pre-fit learning routers; the remaining 250 are evaluated.
+Reference numbers: [`docs/RESULTS.md`](RESULTS.md).
 
 `LeaderboardResult.ranked()` sorts by:
 
