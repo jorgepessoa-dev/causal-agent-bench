@@ -149,3 +149,36 @@ class TestRouterBenchJsonlLoader:
         loader = RouterBenchJsonlLoader(p)
         assert len(loader) == 2
         assert [row.decision.decision_id for row in loader] == ["a", "b"]
+
+    def test_inline_annotation_fields_override_default(self, tmp_path: Path):
+        p = tmp_path / "annotated.jsonl"
+        p.write_text(
+            '{"sample_id": "a", "prompt": "p", "models": ["x"], "model": "x", '
+            '"cost": 0.01, "correct": 1, "task_type": "code_generation", '
+            '"difficulty": "hard", "annotator_id": "haiku-v1", "confidence": 0.85}\n'
+            '{"sample_id": "b", "prompt": "p", "models": ["x"], "model": "x", '
+            '"cost": 0.01, "correct": 0}\n'
+        )
+        loader = RouterBenchJsonlLoader(p)
+        rows = list(loader)
+        assert rows[0].annotation.task_type == "code_generation"
+        assert rows[0].annotation.difficulty == "hard"
+        assert rows[0].annotation.annotator_id == "haiku-v1"
+        assert rows[0].annotation.confidence == 0.85
+        # Row without annotation fields falls back to the placeholder default.
+        assert rows[1].annotation.annotator_id == "unannotated"
+
+    def test_inline_annotation_not_leaked_to_router_decision_extras(self, tmp_path: Path):
+        p = tmp_path / "annotated.jsonl"
+        p.write_text(
+            '{"sample_id": "a", "prompt": "p", "models": ["x"], "model": "x", '
+            '"cost": 0.01, "score": 0.5, "task_type": "math_reasoning", '
+            '"difficulty": "medium", "router": "rb-v1"}\n'
+        )
+        loader = RouterBenchJsonlLoader(p)
+        row = next(iter(loader))
+        # annotation fields filtered out of RouterDecision.model_extra
+        assert "task_type" not in (row.decision.model_extra or {})
+        assert "difficulty" not in (row.decision.model_extra or {})
+        # legitimate extras still pass through
+        assert (row.decision.model_extra or {}).get("router") == "rb-v1"

@@ -75,6 +75,11 @@ def map_row_to_decision(row: Dict[str, Any]) -> RouterDecision:
             "observed_quality",
             "score",
             "correct",
+            # annotation fields consumed separately by _annotation_from_row:
+            "task_type",
+            "difficulty",
+            "annotator_id",
+            "confidence",
         }
     }
 
@@ -95,6 +100,27 @@ def _default_annotation() -> CausalAnnotation:
         difficulty="medium",
         annotator_id=_PLACEHOLDER_ANNOTATOR_ID,
         confidence=0.0,
+    )
+
+
+def _annotation_from_row(
+    row: Dict[str, Any],
+    default: CausalAnnotation,
+) -> CausalAnnotation:
+    """If the row carries inline annotation fields, prefer them over the default.
+
+    Recognized keys: ``task_type``, ``difficulty``, ``annotator_id``,
+    ``confidence``. Unspecified keys fall back to the loader-wide default,
+    so partially-annotated rows still work. Strict schema validation is
+    delegated to Pydantic (unknown task_types or difficulties fail loudly).
+    """
+    if not any(k in row for k in ("task_type", "difficulty", "annotator_id", "confidence")):
+        return default
+    return CausalAnnotation(
+        task_type=row.get("task_type", default.task_type),
+        difficulty=row.get("difficulty", default.difficulty),
+        annotator_id=row.get("annotator_id", default.annotator_id),
+        confidence=float(row.get("confidence", default.confidence)),
     )
 
 
@@ -133,7 +159,7 @@ class RouterBenchJsonlLoader:
                     ) from exc
                 yield AnnotatedDecision(
                     decision=map_row_to_decision(row),
-                    annotation=self._default_annotation,
+                    annotation=_annotation_from_row(row, self._default_annotation),
                 )
 
     def __len__(self) -> int:
