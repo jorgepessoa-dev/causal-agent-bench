@@ -17,16 +17,19 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List, Optional, Sequence, TextIO, Tuple
+from typing import Iterable, List, Optional, Sequence, TextIO, Tuple
 
 from .leaderboard import run_leaderboard
 from .loader import InMemoryDataSource
 from .loaders import RouterBenchJsonlLoader
 from .router import HeuristicRouter, RandomRouter, Router
 from .routers import ContextualThompsonRouter, PopularityRouter, ThompsonRouter
+from .schema import AnnotatedDecision
 
 
-def _all_baselines(seed: int, warmup_source: Optional[Path]) -> List[Tuple[str, Router]]:
+def _all_baselines(
+    seed: int, fit_data: Optional[Iterable[AnnotatedDecision]]
+) -> List[Tuple[str, Router]]:
     baselines: List[Tuple[str, Router]] = [
         ("random", RandomRouter(seed=seed)),
         ("heuristic", HeuristicRouter()),
@@ -34,8 +37,8 @@ def _all_baselines(seed: int, warmup_source: Optional[Path]) -> List[Tuple[str, 
     popularity = PopularityRouter()
     thompson = ThompsonRouter(seed=seed)
     contextual = ContextualThompsonRouter(seed=seed)
-    if warmup_source is not None:
-        warm = list(RouterBenchJsonlLoader(warmup_source))
+    if fit_data is not None:
+        warm = list(fit_data)
         popularity.fit(warm)
         thompson.fit(warm)
         contextual.fit(warm)
@@ -55,7 +58,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--warmup",
         type=Path,
         default=None,
-        help="Optional JSONL used to pre-fit learning routers (e.g. thompson).",
+        help="Optional JSONL used to pre-fit learning routers. Mutually "
+        "exclusive with --warmup-split.",
+    )
+    p.add_argument(
+        "--warmup-split",
+        type=int,
+        default=0,
+        help="Use the first N rows of --source as warmup, remaining as eval. "
+        "0 disables (default). Mutually exclusive with --warmup.",
     )
     p.add_argument(
         "--seed",
@@ -80,14 +91,36 @@ def main(
     args = _build_parser().parse_args(argv)
     out = stdout if stdout is not None else sys.stdout
 
-    raw_source = RouterBenchJsonlLoader(args.source)
-    source = InMemoryDataSource(list(raw_source))  # materialize once
+    if args.warmup is not None and args.warmup_split:
+        raise SystemExit("--warmup and --warmup-split are mutually exclusive")
 
-    routers = _all_baselines(seed=args.seed, warmup_source=args.warmup)
+    all_rows = list(RouterBenchJsonlLoader(args.source))
+
+    fit_data: Optional[List[AnnotatedDecision]]
+    eval_rows: List[AnnotatedDecision]
+
+    if args.warmup_split:
+        if args.warmup_split <= 0 or args.warmup_split >= len(all_rows):
+            raise SystemExit(
+                f"--warmup-split={args.warmup_split} must be in (0, {len(all_rows)})"
+            )
+        fit_data = all_rows[: args.warmup_split]
+        eval_rows = all_rows[args.warmup_split :]
+    elif args.warmup is not None:
+        fit_data = list(RouterBenchJsonlLoader(args.warmup))
+        eval_rows = all_rows
+    else:
+        fit_data = None
+        eval_rows = all_rows
+
+    source = InMemoryDataSource(eval_rows)
+    routers = _all_baselines(seed=args.seed, fit_data=fit_data)
     result = run_leaderboard(routers, source)
     payload = {
         "source": str(args.source),
         "seed": args.seed,
+        "warmup_split": args.warmup_split or None,
+        "warmup": str(args.warmup) if args.warmup else None,
         **result.to_dict(),
     }
     encoded = json.dumps(payload, indent=2, sort_keys=True)

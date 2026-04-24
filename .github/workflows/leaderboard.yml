@@ -1,9 +1,10 @@
 name: leaderboard
 
 # F2.4: one invocation, one combined ranked artifact. Runs all baselines
-# over the repo's fixture and uploads a single leaderboard.json. Once real
-# RouterBench data lands (F2.2), the --source arg swaps from the tiny
-# fixture to the full seed file.
+# over the 500-row synthetic fixture with a 50/50 warmup/eval split so
+# learning routers (thompson, contextual_thompson, popularity) have
+# signal. Once real RouterBench data lands (F2.2), the --source arg
+# swaps to the full seed file.
 
 on:
   push:
@@ -31,7 +32,8 @@ jobs:
       - name: Run all baselines (combined leaderboard)
         run: |
           python -m causal_agent_bench.leaderboard_cli \
-            --source tests/fixtures/synthetic_router_decisions.jsonl \
+            --source tests/fixtures/synthetic_router_decisions_large.jsonl \
+            --warmup-split 250 \
             --seed 0 \
             --output leaderboard.json
 

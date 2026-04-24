@@ -76,3 +76,39 @@ class TestLeaderboardCLI:
         payload = json.loads(out)
         result_order = [r["router"] for r in payload["results"]]
         assert result_order == payload["ranking"]
+
+    def test_warmup_split_uses_first_n_for_fit(self, tmp_path: Path):
+        # Construct a source with a strong warmup signal in the first 3 rows
+        # (model "a" always wins) and a different eval split of 2 rows.
+        p = tmp_path / "mix.jsonl"
+        rows = [
+            '{"sample_id": "w0", "prompt": "x", "models": ["a", "b"], "model": "a", "cost": 0.01, "correct": 1}',
+            '{"sample_id": "w1", "prompt": "x", "models": ["a", "b"], "model": "a", "cost": 0.01, "correct": 1}',
+            '{"sample_id": "w2", "prompt": "x", "models": ["a", "b"], "model": "a", "cost": 0.01, "correct": 1}',
+            '{"sample_id": "e0", "prompt": "x", "models": ["a", "b"], "model": "a", "cost": 0.01, "correct": 1}',
+            '{"sample_id": "e1", "prompt": "x", "models": ["a", "b"], "model": "b", "cost": 0.01, "correct": 0}',
+        ]
+        p.write_text("\n".join(rows) + "\n")
+        out = _run(["--source", str(p), "--warmup-split", "3", "--seed", "0"])
+        payload = json.loads(out)
+        assert payload["warmup_split"] == 3
+        # Only 2 rows in the eval split → every baseline reports n_rows=2.
+        for r in payload["results"]:
+            assert r["n_rows"] == 2
+
+    def test_warmup_and_split_mutually_exclusive(self, tmp_path: Path):
+        dummy = tmp_path / "d.jsonl"
+        dummy.write_text(
+            '{"sample_id": "x", "prompt": "p", "models": ["a"], "model": "a", "cost": 0.01, "correct": 1}\n'
+        )
+        with pytest.raises(SystemExit, match="mutually exclusive"):
+            main(["--source", str(dummy), "--warmup", str(dummy), "--warmup-split", "1"])
+
+    def test_warmup_split_out_of_range_errors(self, tmp_path: Path):
+        p = tmp_path / "tiny.jsonl"
+        p.write_text(
+            '{"sample_id": "x", "prompt": "p", "models": ["a"], "model": "a", "cost": 0.01, "correct": 1}\n'
+            '{"sample_id": "y", "prompt": "p", "models": ["a"], "model": "a", "cost": 0.01, "correct": 1}\n'
+        )
+        with pytest.raises(SystemExit, match="must be in"):
+            main(["--source", str(p), "--warmup-split", "2"])
