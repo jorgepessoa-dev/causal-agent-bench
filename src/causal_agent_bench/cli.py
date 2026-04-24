@@ -23,10 +23,10 @@ from typing import Any, Dict, Optional, Sequence, TextIO
 from .evaluation import EvaluationReport, evaluate_router
 from .loaders import RouterBenchJsonlLoader
 from .router import HeuristicRouter, RandomRouter, Router
-from .routers import ThompsonRouter
+from .routers import PopularityRouter, ThompsonRouter
 
 
-_ROUTERS = ("random", "heuristic", "thompson")
+_ROUTERS = ("random", "heuristic", "popularity", "thompson")
 
 
 def _build_router(name: str, *, seed: int, warmup_source: Optional[Path] = None) -> Router:
@@ -34,11 +34,16 @@ def _build_router(name: str, *, seed: int, warmup_source: Optional[Path] = None)
         return RandomRouter(seed=seed)
     if name == "heuristic":
         return HeuristicRouter()
-    if name == "thompson":
-        router = ThompsonRouter(seed=seed)
+    if name == "popularity":
+        pop = PopularityRouter()
         if warmup_source is not None:
-            router.fit(RouterBenchJsonlLoader(warmup_source))
-        return router
+            pop.fit(RouterBenchJsonlLoader(warmup_source))
+        return pop
+    if name == "thompson":
+        ts = ThompsonRouter(seed=seed)
+        if warmup_source is not None:
+            ts.fit(RouterBenchJsonlLoader(warmup_source))
+        return ts
     raise ValueError(f"unknown router: {name}; choose from {_ROUTERS}")
 
 

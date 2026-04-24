@@ -23,7 +23,7 @@ from .leaderboard import run_leaderboard
 from .loader import InMemoryDataSource
 from .loaders import RouterBenchJsonlLoader
 from .router import HeuristicRouter, RandomRouter, Router
-from .routers import ThompsonRouter
+from .routers import PopularityRouter, ThompsonRouter
 
 
 def _all_baselines(seed: int, warmup_source: Optional[Path]) -> List[Tuple[str, Router]]:
@@ -31,9 +31,13 @@ def _all_baselines(seed: int, warmup_source: Optional[Path]) -> List[Tuple[str, 
         ("random", RandomRouter(seed=seed)),
         ("heuristic", HeuristicRouter()),
     ]
+    popularity = PopularityRouter()
     thompson = ThompsonRouter(seed=seed)
     if warmup_source is not None:
-        thompson.fit(RouterBenchJsonlLoader(warmup_source))
+        warm = list(RouterBenchJsonlLoader(warmup_source))
+        popularity.fit(warm)
+        thompson.fit(warm)
+    baselines.append(("popularity", popularity))
     baselines.append(("thompson", thompson))
     return baselines
 

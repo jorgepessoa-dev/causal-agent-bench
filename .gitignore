@@ -14,3 +14,4 @@ build/
 .DS_Store
 datasets/raw/
 datasets/processed/*.parquet
+uv.lock

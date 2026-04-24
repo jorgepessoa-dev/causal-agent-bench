@@ -2,19 +2,26 @@
 
 Public benchmark for **causal LLM routing** — extends [RouterBench](https://github.com/withmartian/routerbench) (405k outcomes) with causal annotations (task-type, difficulty, confounders) to support offline causal evaluation and routing comparisons.
 
-> **Status**: Early-alpha. Schema, loaders, baselines, and evaluation harness landed (F2.1–F2.4 scaffolds). Real RouterBench ingestion pending F2.2 dedicated session. See `docs/ROADMAP.md`.
+> **Status**: Early-alpha. Schema, loaders, 4 baselines, single-router CLI, combined leaderboard CLI, and CI workflow all landed (F2.1–F2.4). Real RouterBench ingestion pending F2.2 dedicated session. See `docs/ROADMAP.md`.
 
 ## Quick start
 
 ```bash
 git clone https://github.com/jorgepessoa-dev/causal-agent-bench && cd causal-agent-bench
 pip install -e .
+
+# Single router
 python -m causal_agent_bench.cli \
     --source tests/fixtures/synthetic_router_decisions.jsonl \
     --router heuristic
+
+# All baselines, ranked (same invocation CI uses)
+python -m causal_agent_bench.leaderboard_cli \
+    --source tests/fixtures/synthetic_router_decisions.jsonl \
+    --seed 0
 ```
 
-Available baselines: `random`, `heuristic`. Smarter routers (RouteLLM reimpl, causal-agent-router) are scoped for the next commits.
+Available baselines: `random`, `heuristic`, `popularity`, `thompson`. Causal baseline (`causal-agent-router` via Routecast) pending F3.2 PyPI publish of `cognitiveos.core`.
 
 ## Why
 
@@ -39,12 +46,11 @@ Apache-2.0 (preliminary; confirm in F2.1 finalization).
 
 ## Status
 
-- [x] Scaffold directory tree + governance files
-- [x] Schema + DataSource Protocol (F2.1, F2.2 prep)
-- [x] RouterBench JSONL loader (F2.2 prep; real ingestion pending license check)
-- [x] Baselines: `RandomRouter`, `HeuristicRouter` (F2.3 — 2 of 4; RouteLLM + causal pending)
-- [x] Evaluation harness + CLI (F2.3 + F2.4 scaffold)
-- [x] Leaderboard workflow (F2.4 scaffold — runs on every PR)
-- [ ] Real RouterBench seed (F2.2)
-- [ ] Full baselines set: RouteLLM-reimpl + causal-agent-router (F2.3 completion)
-- [ ] Contribution docs finalised (F2.5)
+- [x] Scaffold directory tree + governance files (F2.1)
+- [x] Schema + DataSource Protocol + RouterBench JSONL loader (F2.2 prep)
+- [x] Baselines: `RandomRouter`, `HeuristicRouter`, `PopularityRouter`, `ThompsonRouter` (F2.3 — ≥4 gate met)
+- [x] Evaluation harness + single-router CLI + combined leaderboard CLI (F2.3–F2.4)
+- [x] Leaderboard GitHub Actions workflow — one ranked JSON artifact per commit (F2.4)
+- [ ] Real RouterBench seed — license check + 5k annotated decisions (F2.2 dedicated session)
+- [ ] Causal baseline: `causal-agent-router` via Routecast (F2.3 completion, blocked on F3.2 PyPI publish)
+- [ ] Contribution docs deepened + submission guide (F2.5)

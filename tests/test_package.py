@@ -8,7 +8,7 @@ def test_package_imports():
 
 
 def test_version_defined():
-    assert causal_agent_bench.__version__ == "0.0.4"
+    assert causal_agent_bench.__version__ == "0.0.5"
 
 
 def test_public_api_surface():
@@ -23,6 +23,7 @@ def test_public_api_surface():
         "InMemoryDataSource",
         "LeaderboardEntry",
         "LeaderboardResult",
+        "PopularityRouter",
         "RandomRouter",
         "Router",
         "RouterBenchJsonlLoader",

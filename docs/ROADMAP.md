@@ -4,10 +4,10 @@
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| F2.1  | Scaffold (this PR) — dir tree, LICENSE, README, CONTRIBUTING, pyproject, CI stub | ✅ drafted locally |
-| F2.2  | Dataset seed — fork/extend RouterBench with causal annotations (task_type, difficulty, confounders) | ⏳ |
-| F2.3  | Baselines — random, cost-heuristic, RouteLLM-reimpl, `Routecast` reference causal router | ⏳ |
-| F2.4  | Leaderboard — GitHub Actions auto-run on PRs; versioned by commit hash | ⏳ |
+| F2.1  | Scaffold — dir tree, LICENSE, README, CONTRIBUTING, pyproject, CI | ✅ shipped |
+| F2.2  | Dataset seed — fork/extend RouterBench with causal annotations (task_type, difficulty, confounders) | 🟡 prep done (loader + schema + license checklist); real ingestion pending dedicated session |
+| F2.3  | Baselines — random, heuristic, popularity, thompson, causal (Routecast) | 🟡 4 of 5 shipped; Routecast blocked on F3.2 PyPI publish |
+| F2.4  | Leaderboard — single combined ranked artifact per commit via GitHub Actions | ✅ shipped |
 | F2.5  | Docs — README deepening, contribution template, submission guide, metric definitions | ⏳ |
 
 ## Dependencies
