@@ -8,7 +8,7 @@
 | F2.2  | Dataset seed — fork/extend RouterBench with causal annotations (task_type, difficulty, confounders) | 🟡 prep done (loader + schema + license checklist); real ingestion pending dedicated session |
 | F2.3  | Baselines — random, heuristic, popularity, thompson, causal (Routecast) | 🟡 4 of 5 shipped; Routecast blocked on F3.2 PyPI publish |
 | F2.4  | Leaderboard — single combined ranked artifact per commit via GitHub Actions | ✅ shipped |
-| F2.5  | Docs — README deepening, contribution template, submission guide, metric definitions | 🟡 submission guide + CONTRIBUTING done; metric definitions pending |
+| F2.5  | Docs — README deepening, contribution template, submission guide, metric definitions | ✅ shipped (SUBMITTING + METRICS + CONTRIBUTING + ROADMAP) |
 
 ## Dependencies
 

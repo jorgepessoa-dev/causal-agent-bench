@@ -43,6 +43,7 @@ Apache-2.0 (preliminary; confirm in F2.1 finalization).
 - Upstream: [RouterBench](https://github.com/withmartian/routerbench) (MIT; dataset license TBC — see `docs/upstream_sources.md`)
 - Reference routing library (causal): `Routecast` (separate repo, in development)
 - Submitting a router: [`docs/SUBMITTING.md`](docs/SUBMITTING.md)
+- Metric definitions: [`docs/METRICS.md`](docs/METRICS.md)
 - Planning record: [CognitiveOS research/plan/decisions/ADR-001](https://github.com/jorgepessoa-dev/CognitiveOS/blob/main/research/plan/decisions/ADR-001-gate-f0-go.md)
 
 ## Status
