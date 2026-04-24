@@ -4,7 +4,9 @@
 
 ## Current state
 
-Pre-alpha. Dataset and baselines not yet committed. Open an issue before starting non-trivial work.
+Early-alpha. 4 baselines and the leaderboard harness are committed; real RouterBench ingestion is license-blocked (see `docs/upstream_sources.md`). Open an issue before starting non-trivial work.
+
+**Adding a new router?** Read `docs/SUBMITTING.md` — it covers the Protocol contract, determinism rules, and ranking semantics.
 
 ## Types of contribution welcomed
 
