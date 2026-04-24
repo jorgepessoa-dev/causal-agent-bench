@@ -8,7 +8,6 @@ from causal_agent_bench.router import (
     HeuristicRouter,
     RandomRouter,
     Router,
-    RouterChoice,
 )
 from causal_agent_bench.schema import CausalAnnotation, RouterDecision
 

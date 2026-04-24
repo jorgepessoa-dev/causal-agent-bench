@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, Iterable
+from typing import Dict
 
 from .loader import DataSource
 from .router import Router
