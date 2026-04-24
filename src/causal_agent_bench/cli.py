@@ -18,9 +18,9 @@ import json
 import sys
 from dataclasses import asdict
 from pathlib import Path
-from typing import Optional, Sequence, TextIO
+from typing import Any, Dict, Optional, Sequence, TextIO
 
-from .evaluation import evaluate_router
+from .evaluation import EvaluationReport, evaluate_router
 from .loaders import RouterBenchJsonlLoader
 from .router import HeuristicRouter, RandomRouter, Router
 
@@ -63,7 +63,9 @@ def _build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def _report_to_dict(router_name: str, source_path: Path, report) -> dict:
+def _report_to_dict(
+    router_name: str, source_path: Path, report: EvaluationReport
+) -> Dict[str, Any]:
     per_difficulty = {
         diff: asdict(m) | {"coverage": m.coverage}
         for diff, m in report.per_difficulty.items()

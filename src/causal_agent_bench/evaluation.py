@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Dict, List
 
 from .loader import DataSource
 from .router import Router
@@ -58,7 +58,7 @@ class EvaluationReport:
         return self.n_matches / self.n_rows if self.n_rows else 0.0
 
 
-def _aggregate(n_rows: int, qualities: list, costs: list) -> BucketMetrics:
+def _aggregate(n_rows: int, qualities: List[float], costs: List[float]) -> BucketMetrics:
     n_matches = len(qualities)
     mean_q = sum(qualities) / n_matches if n_matches else 0.0
     mean_c = sum(costs) / n_matches if n_matches else 0.0
@@ -79,11 +79,11 @@ def evaluate_router(router: Router, source: DataSource) -> EvaluationReport:
     for this router under the IPS-match interpretation.
     """
     total_rows = 0
-    qualities: list = []
-    costs: list = []
+    qualities: List[float] = []
+    costs: List[float] = []
     bucket_totals: Dict[str, int] = defaultdict(int)
-    bucket_q: Dict[str, list] = defaultdict(list)
-    bucket_c: Dict[str, list] = defaultdict(list)
+    bucket_q: Dict[str, List[float]] = defaultdict(list)
+    bucket_c: Dict[str, List[float]] = defaultdict(list)
 
     for ad in source:
         if not isinstance(ad, AnnotatedDecision):
