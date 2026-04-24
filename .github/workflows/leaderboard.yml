@@ -1,9 +1,9 @@
 name: leaderboard
 
-# F2.4 scaffold: on every push to main and every PR, run each baseline
-# router over the repo's fixture and upload the JSON reports as build
-# artifacts. Once real RouterBench data lands (F2.2 dedicated session),
-# the --source arg swaps from the tiny fixture to the full seed file.
+# F2.4: one invocation, one combined ranked artifact. Runs all baselines
+# over the repo's fixture and uploads a single leaderboard.json. Once real
+# RouterBench data lands (F2.2), the --source arg swaps from the tiny
+# fixture to the full seed file.
 
 on:
   push:
@@ -12,12 +12,8 @@ on:
     branches: [main]
 
 jobs:
-  baselines:
+  leaderboard:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        router: [random, heuristic, thompson]
 
     steps:
       - uses: actions/checkout@v4
@@ -32,22 +28,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
 
-      - name: Evaluate baseline (${{ matrix.router }})
+      - name: Run all baselines (combined leaderboard)
         run: |
-          python -m causal_agent_bench.cli \
+          python -m causal_agent_bench.leaderboard_cli \
             --source tests/fixtures/synthetic_router_decisions.jsonl \
-            --router ${{ matrix.router }} \
             --seed 0 \
-            --output report-${{ matrix.router }}.json
+            --output leaderboard.json
 
-      - name: Display report
+      - name: Display ranking
         run: |
-          echo "### Baseline: ${{ matrix.router }} (commit ${GITHUB_SHA:0:7})"
-          cat report-${{ matrix.router }}.json
+          echo "### Leaderboard (commit ${GITHUB_SHA:0:7})"
+          cat leaderboard.json
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v4
         with:
-          name: leaderboard-${{ matrix.router }}-${{ github.sha }}
-          path: report-${{ matrix.router }}.json
+          name: leaderboard-${{ github.sha }}
+          path: leaderboard.json
           retention-days: 30
