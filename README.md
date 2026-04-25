@@ -2,10 +2,10 @@
 
 Public benchmark for **causal LLM routing** — extends [RouterBench](https://github.com/withmartian/routerbench) (405k outcomes) with causal annotations (task-type, difficulty, confounders) to support offline causal evaluation and routing comparisons.
 
-> **Status**: Feature-complete (F3.1–F3.2 in development).
-> - ✅ **Published**: NeurIPS 2026 Workshop paper + Phase 3 DR-OPE validation (arXiv 2026-04-25)
-> - ✅ **Features**: Schema, loaders, 5 baselines, single-router CLI, leaderboard CLI with warmup-split, CI determinism, DR-OPE support
-> - ⏳ **Next**: Real RouterBench ingestion (F2.2 license pending), metric flip to DR-OPE primary (post-real-data validation)
+> **Status**: Feature-complete (F3.1–F3.2 in development). **Phase 2 ready: PyPI + Community submissions enabled.**
+> - ✅ **F3.1 Ready**: Paper + Phase 3 validation PDF generated (arXiv submission pending author action)
+> - ✅ **Phase 2 Ready**: PyPI package (v0.0.6), GitHub Actions CI determinism, community submission protocol ([SUBMITTING.md](docs/SUBMITTING.md))
+> - ⏳ **Phase 3 Blocked**: Real-data validation pending RouterBench license clearance; Phase 4 roadmap documented ([PHASE-4-GATING-PROTOCOL.md](docs/PHASE-4-GATING-PROTOCOL.md))
 >
 > See [`docs/RESULTS.md`](docs/RESULTS.md) for reference leaderboard, [`docs/PHASE-3-VALIDATION-REPORT.md`](docs/PHASE-3-VALIDATION-REPORT.md) for validation, [`docs/ROADMAP.md`](docs/ROADMAP.md) for what comes next.
 
