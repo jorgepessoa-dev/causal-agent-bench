@@ -116,7 +116,6 @@ def _compute_dr_ope(
 
         # IPS correction term (only if match)
         ips_q_term = 0.0
-        ips_c_term = 0.0
 
         if a_eval == a_log:
             # Matched decision: can compute IPS correction
@@ -124,20 +123,20 @@ def _compute_dr_ope(
 
             if propensity > 0:
                 q_pred_log = reward_model.predict(ad.decision, a_log)
-                c_pred_eval = reward_model.predict(ad.decision, a_eval)
 
                 # IPS correction: (q - q̂) / π̂₀
                 ips_q_term = (q_log - q_pred_log) / propensity
-                # For cost, assume same structure
-                ips_c_term = (c_log - c_pred_eval) / propensity
 
                 # Record reward model error for diagnostics
                 reward_errors.append(abs(q_log - q_pred_log))
                 bucket_errors[diff].append(abs(q_log - q_pred_log))
 
-        # DR estimate: direct + IPS correction
-        dr_q = q_pred_eval + ips_q_term
-        dr_c = q_pred_eval + ips_c_term  # Cost direct method + IPS
+        # DR estimate for quality: direct + IPS correction
+        # Clamp to [0, 1] to prevent reward model/propensity instability from
+        # producing invalid quality estimates (especially with poor q̂)
+        dr_q = max(0.0, min(1.0, q_pred_eval + ips_q_term))
+        # Cost: use observed cost (no DR-OPE formula for cost per design §Validation)
+        dr_c = c_log if a_eval == a_log else 0.0
 
         dr_qualities.append(dr_q)
         dr_costs.append(dr_c)

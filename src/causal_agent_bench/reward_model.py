@@ -117,4 +117,16 @@ class DummyRewardModel:
         return self.default_quality
 
 
-__all__ = ["RewardModel", "RoutcastWrapper", "DummyRewardModel"]
+class OracleRewardModel:
+    """Oracle reward model: returns observed_quality from decision (for DR-OPE validation).
+
+    This is an upper-bound estimator for Phase 3 synthetic validation.
+    In real data, use RoutcastWrapper or a proper trained model.
+    """
+
+    def predict(self, decision: RouterDecision, model: str) -> float:
+        """Return observed quality from decision record."""
+        return decision.observed_quality
+
+
+__all__ = ["RewardModel", "RoutcastWrapper", "DummyRewardModel", "OracleRewardModel"]

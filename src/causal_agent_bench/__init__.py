@@ -12,7 +12,7 @@ from .leaderboard import LeaderboardEntry, LeaderboardResult, run_leaderboard
 from .loader import DataSource, InMemoryDataSource
 from .loaders import RouterBenchJsonlLoader
 from .propensity_estimator import AnnotationConditionedEmpirical
-from .reward_model import DummyRewardModel, RewardModel, RoutcastWrapper
+from .reward_model import DummyRewardModel, OracleRewardModel, RewardModel, RoutcastWrapper
 from .router import HeuristicRouter, RandomRouter, Router, RouterChoice
 from .routers import ContextualThompsonRouter, PopularityRouter, ThompsonRouter
 from .schema import AnnotatedDecision, CausalAnnotation, Difficulty, RouterDecision, TaskType
@@ -31,6 +31,7 @@ __all__ = [
     "Difficulty",
     "DummyRewardModel",
     "EvaluationReport",
+    "OracleRewardModel",
     "HeuristicRouter",
     "InMemoryDataSource",
     "LeaderboardEntry",

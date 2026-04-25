@@ -43,23 +43,31 @@ class LeaderboardResult:
 
     def to_dict(self) -> Dict[str, object]:
         ranked = self.ranked()
+        results = []
+        for e in ranked:
+            result_dict = {
+                "router": e.router,
+                "n_rows": e.report.n_rows,
+                "n_matches": e.report.n_matches,
+                "coverage": e.report.coverage,
+                "mean_quality": e.report.mean_quality,
+                "mean_cost": e.report.mean_cost,
+                "per_difficulty": {
+                    diff: asdict(m) | {"coverage": m.coverage}
+                    for diff, m in e.report.per_difficulty.items()
+                },
+            }
+            # Add DR-OPE metrics if present
+            if e.report.dr_quality is not None:
+                result_dict["dr_quality"] = e.report.dr_quality
+            if e.report.dr_cost is not None:
+                result_dict["dr_cost"] = e.report.dr_cost
+            if e.report.per_difficulty_dr is not None:
+                result_dict["per_difficulty_dr"] = e.report.per_difficulty_dr
+            results.append(result_dict)
         return {
             "ranking": [e.router for e in ranked],
-            "results": [
-                {
-                    "router": e.router,
-                    "n_rows": e.report.n_rows,
-                    "n_matches": e.report.n_matches,
-                    "coverage": e.report.coverage,
-                    "mean_quality": e.report.mean_quality,
-                    "mean_cost": e.report.mean_cost,
-                    "per_difficulty": {
-                        diff: asdict(m) | {"coverage": m.coverage}
-                        for diff, m in e.report.per_difficulty.items()
-                    },
-                }
-                for e in ranked
-            ],
+            "results": results,
         }
 
 

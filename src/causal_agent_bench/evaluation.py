@@ -158,8 +158,9 @@ def evaluate_router_with_dr_ope(
         )
 
     if reward_model is None:
-        # Fallback to dummy for testing
-        reward_model = DummyRewardModel()
+        # Default: use DummyRewardModel with mean quality estimate
+        # For better results in Phase 3, pass RoutcastWrapper(routecast_instance)
+        reward_model = DummyRewardModel(0.75)
 
     # Compute DR-OPE
     dr_ope_result = _compute_dr_ope(router, source, propensity_estimator, reward_model)
