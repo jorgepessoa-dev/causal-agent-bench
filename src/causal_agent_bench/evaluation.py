@@ -1,4 +1,4 @@
-"""Benchmark evaluation (F2.3): run a Router over a DataSource, aggregate metrics.
+"""Benchmark evaluation (F2.3+): run a Router over a DataSource, aggregate metrics.
 
 The evaluation harness is deliberately thin. Each row in the DataSource
 already carries the *observed* outcome (cost + quality for the upstream
@@ -10,25 +10,19 @@ chosen model). When we evaluate a candidate router, two cases arise:
    an observation for that model on that prompt, so the row is excluded
    from quality/cost averaging (flagged via ``coverage`` metric).
 
-This is the simplest IPS-friendly shape; full doubly-robust evaluation will
-land once we wire causal-agent-router's SCM into scoring. For now, the
-report exposes:
-
-- ``coverage``: fraction of rows where router's pick matched the log
-- ``mean_quality``: average observed_quality over matched rows
-- ``mean_cost``: average observed_cost over matched rows
-- ``per_difficulty``: the same three metrics bucketed by annotation.difficulty
-- ``n_rows``: total rows seen
-- ``n_matches``: rows where match occurred
+Primary metric (F3.1): **match-IPS** (simple, unbiased under stable matches).
+Secondary metric (Phase 1 validation): **DR-OPE** (doubly-robust, requires
+propensity + reward model estimators; see dr_ope.py).
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .loader import DataSource
+from .reward_model import RewardModel
 from .router import Router
 from .schema import AnnotatedDecision
 
@@ -52,6 +46,10 @@ class EvaluationReport:
     mean_quality: float
     mean_cost: float
     per_difficulty: Dict[str, BucketMetrics] = field(default_factory=dict)
+    # Optional DR-OPE metrics (computed if use_dr_ope=True)
+    dr_quality: Optional[float] = None
+    dr_cost: Optional[float] = None
+    per_difficulty_dr: Optional[Dict[str, Dict[str, float]]] = None
 
     @property
     def coverage(self) -> float:
@@ -115,4 +113,81 @@ def evaluate_router(router: Router, source: DataSource) -> EvaluationReport:
     )
 
 
-__all__ = ["BucketMetrics", "EvaluationReport", "evaluate_router"]
+def evaluate_router_with_dr_ope(
+    router: Router,
+    source: DataSource,
+    propensity_estimator: Optional[object] = None,
+    reward_model: Optional[RewardModel] = None,
+    use_dr_ope: bool = False,
+) -> EvaluationReport:
+    """Run ``router`` over ``source``; optionally compute DR-OPE alongside match-IPS.
+
+    Args:
+        router: Router policy to evaluate.
+        source: DataSource yielding AnnotatedDecision records.
+        propensity_estimator: Optional propensity estimator
+            (must have estimate(task_type, difficulty, model) -> float method).
+            If None and use_dr_ope=True, uses AnnotationConditionedEmpirical
+            from warmup split (if available).
+        reward_model: Optional reward model q̂(x, a) (must have
+            predict(decision, model) -> float method).
+            If None and use_dr_ope=True, uses DummyRewardModel.
+        use_dr_ope: If True, compute both match-IPS and DR-OPE metrics.
+            If False, compute match-IPS only (default, F3.1 behavior).
+
+    Returns:
+        EvaluationReport with match-IPS metrics always populated.
+        If use_dr_ope=True, dr_quality and dr_cost are also populated.
+    """
+    # Always compute match-IPS
+    match_ips_result = evaluate_router(router, source)
+
+    # If DR-OPE not requested, return early
+    if not use_dr_ope:
+        return match_ips_result
+
+    # DR-OPE requested: need propensity + reward estimators
+    from .dr_ope import _compute_dr_ope
+    from .propensity_estimator import AnnotationConditionedEmpirical
+    from .reward_model import DummyRewardModel
+
+    if propensity_estimator is None:
+        raise ValueError(
+            "DR-OPE requested but propensity_estimator not provided. "
+            "Pass AnnotationConditionedEmpirical or compatible estimator."
+        )
+
+    if reward_model is None:
+        # Fallback to dummy for testing
+        reward_model = DummyRewardModel()
+
+    # Compute DR-OPE
+    dr_ope_result = _compute_dr_ope(router, source, propensity_estimator, reward_model)
+
+    # Merge results: return both match-IPS and DR-OPE
+    return EvaluationReport(
+        n_rows=match_ips_result.n_rows,
+        n_matches=match_ips_result.n_matches,
+        mean_quality=match_ips_result.mean_quality,
+        mean_cost=match_ips_result.mean_cost,
+        per_difficulty=match_ips_result.per_difficulty,
+        # Add DR-OPE metrics
+        dr_quality=dr_ope_result.dr_quality,
+        dr_cost=dr_ope_result.dr_cost,
+        per_difficulty_dr={
+            diff: {
+                "dr_quality": metrics.dr_quality,
+                "dr_cost": metrics.dr_cost,
+                "coverage": metrics.coverage,
+            }
+            for diff, metrics in dr_ope_result.per_difficulty.items()
+        },
+    )
+
+
+__all__ = [
+    "BucketMetrics",
+    "EvaluationReport",
+    "evaluate_router",
+    "evaluate_router_with_dr_ope",
+]

@@ -80,6 +80,13 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Write JSON report to this path (default: stdout).",
     )
+    p.add_argument(
+        "--use-dr-ope",
+        action="store_true",
+        default=False,
+        help="Enable DR-OPE metric computation alongside match-IPS (Phase 1 validation, "
+        "requires --warmup or --warmup-split).",
+    )
     return p
 
 
@@ -115,12 +122,15 @@ def main(
 
     source = InMemoryDataSource(eval_rows)
     routers = _all_baselines(seed=args.seed, fit_data=fit_data)
-    result = run_leaderboard(routers, source)
+    result = run_leaderboard(
+        routers, source, use_dr_ope=args.use_dr_ope, warmup_data=fit_data
+    )
     payload = {
         "source": str(args.source),
         "seed": args.seed,
         "warmup_split": args.warmup_split or None,
         "warmup": str(args.warmup) if args.warmup else None,
+        "use_dr_ope": args.use_dr_ope,
         **result.to_dict(),
     }
     encoded = json.dumps(payload, indent=2, sort_keys=True)

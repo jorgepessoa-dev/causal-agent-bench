@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Dict, Iterator, List, Sequence, Tuple
 
-from .evaluation import EvaluationReport, evaluate_router
+from .evaluation import EvaluationReport, evaluate_router, evaluate_router_with_dr_ope
 from .loader import DataSource
 from .router import Router
 from .schema import AnnotatedDecision
@@ -79,21 +79,56 @@ class _ReplayableSource:
 def run_leaderboard(
     routers: Sequence[Tuple[str, Router]],
     source: DataSource,
+    use_dr_ope: bool = False,
+    warmup_data: List[AnnotatedDecision] | None = None,
 ) -> LeaderboardResult:
     """Evaluate each ``(name, router)`` pair over ``source``.
 
     The source is materialized into a list before running — each router
     needs to walk it independently, and we cannot assume the DataSource is
     re-iterable.
+
+    Args:
+        routers: List of (name, router) pairs to evaluate.
+        source: DataSource yielding AnnotatedDecision records.
+        use_dr_ope: If True, compute DR-OPE metrics alongside match-IPS.
+            Requires warmup_data for propensity estimation.
+        warmup_data: Optional list of AnnotatedDecision records for propensity
+            estimation. Used only if use_dr_ope=True.
     """
     materialized: List[AnnotatedDecision] = list(source)
     replayable = _ReplayableSource(materialized)
+
+    # Set up DR-OPE if requested
+    propensity_estimator = None
+    if use_dr_ope:
+        if warmup_data is None or len(warmup_data) == 0:
+            raise ValueError(
+                "DR-OPE requested but warmup_data is empty or None. "
+                "Set --warmup or --warmup-split > 0."
+            )
+        from .propensity_estimator import AnnotationConditionedEmpirical
+
+        propensity_estimator = AnnotationConditionedEmpirical(
+            warmup_decisions=warmup_data
+        )
 
     entries: List[LeaderboardEntry] = []
     for name, router in routers:
         if not isinstance(router, Router):
             raise TypeError(f"router {name!r} does not satisfy Router protocol")
-        report = evaluate_router(router, replayable)
+
+        if use_dr_ope:
+            report = evaluate_router_with_dr_ope(
+                router,
+                replayable,
+                propensity_estimator=propensity_estimator,
+                reward_model=None,  # Will use default
+                use_dr_ope=True,
+            )
+        else:
+            report = evaluate_router(router, replayable)
+
         entries.append(LeaderboardEntry(router=name, report=report))
     return LeaderboardResult(entries=entries)
 
